@@ -146,6 +146,30 @@ describe("NoLossLottery Sepolia Integration", function () {
       } else {
         console.log("Winner picked, but event not found in the last 5 blocks. Check Sepolia Etherscan!");
       }
+    
+      it("allows users to deposit funds", async function () {
+     await yieldLottery.connect(user).deposit({ value: ether("1") });
+     expect(await yieldLottery.totalDeposits()).to.equal(ether("1"));
+});
+
+     it("allows users to withdraw principal", async function () {
+     await yieldLottery.connect(user).deposit({ value: ether("1") });
+     await yieldLottery.connect(user).withdraw();
+     expect(await yieldLottery.totalDeposits()).to.equal(0);
+});
+
+    it("restricts winner selection to owner", async function () {
+    await expect(yieldLottery.connect(attacker).selectWinner()
+    ).to.be.reverted;
+});
+
+    it("selects a random winner using VRF", async function () {
+    await yieldLottery.connect(user1).deposit({ value: ether("1") });
+    await yieldLottery.connect(user2).deposit({ value: ether("1") });
+    await yieldLottery.connect(owner).selectWinner();
+   expect(await yieldLottery.lastWinner()).to.not.equal(address(0));
+});
+      
     });
   });
 });
